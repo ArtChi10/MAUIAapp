@@ -4,11 +4,26 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MauiApp1"
-    Title="MauiApp1">
+    FlyoutBehavior="Flyout"
+    Title="Мои финансы">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <FlyoutItem Title="Главная" Route="home">
+        <ShellContent
+            Title="Мои финансы"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Отчеты" Route="reports">
+        <ShellContent
+            Title="Отчеты"
+            ContentTemplate="{DataTemplate local:ReportsPage}"
+            Route="ReportsPage" />
+    </FlyoutItem>
 
+    <FlyoutItem Title="Категории" Route="categories">
+        <ShellContent
+            Title="Категории"
+            ContentTemplate="{DataTemplate local:CategoriesPage}"
+            Route="CategoriesPage" />
+    </FlyoutItem>
 </Shell>

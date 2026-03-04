@@ -16,8 +16,8 @@
     <FlyoutItem Title="Отчеты" Route="reports">
         <ShellContent
             Title="Отчеты"
-            ContentTemplate="{DataTemplate local:ReportsPage}"
-            Route="ReportsPage" />
+            ContentTemplate="{DataTemplate local:ReportPage}"
+            Route="ReportPage" />
     </FlyoutItem>
 
     <FlyoutItem Title="Категории" Route="categories">

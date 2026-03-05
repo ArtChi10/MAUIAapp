@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:MauiApp3.Models"
+             x:Class="MauiApp3.Pages.TaskListPage"
+             Title="Список задач">
+
+    <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+        <SearchBar Grid.Row="0"
+                   Placeholder="Поиск по названию или описанию"
+                   Text="{Binding SearchText}" />
+
+        <Picker Grid.Row="1"
+                Title="Фильтр статуса"
+                ItemsSource="{Binding StatusFilters}"
+                SelectedItem="{Binding SelectedStatusFilter}" />
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Tasks}"
+                        SelectionMode="Single"
+                        SelectionChangedCommand="{Binding SelectTaskCommand}"
+                        SelectionChangedCommandParameter="{Binding CurrentSelection[0], Source={RelativeSource Self}}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:TaskItem">
+                    <Frame Margin="0,0,0,8"
+                           Padding="12"
+                           BorderColor="#E0E0E0"
+                           CornerRadius="10">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              ColumnDefinitions="*,Auto"
+                              RowSpacing="6">
+                            <Label Grid.Row="0"
+                                   Text="{Binding Title}"
+                                   FontAttributes="Bold"
+                                   FontSize="18" />
+
+                            <Label Grid.Row="0"
+                                   Grid.Column="1"
+                                   Text="{Binding Priority}"
+                                   TextColor="#6A1B9A"
+                                   FontAttributes="Bold" />
+
+                            <Label Grid.Row="1"
+                                   Grid.ColumnSpan="2"
+                                   Text="{Binding Description}"
+                                   TextColor="#555" />
+
+                            <HorizontalStackLayout Grid.Row="2" Grid.ColumnSpan="2" Spacing="12">
+                                <Label Text="{Binding DueDate, StringFormat='Срок: {0:dd.MM.yyyy}'}" />
+                                <Label Text="{Binding IsCompleted, StringFormat='Выполнена: {0}'}" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

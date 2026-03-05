@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiApp3.Pages.TaskDetailPage"
+             Title="Детали задачи">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Label Text="ID" FontAttributes="Bold" />
+            <Label Text="{Binding CurrentTask.Id}" />
+
+            <Label Text="Название" FontAttributes="Bold" />
+            <Entry Text="{Binding CurrentTask.Title}" Placeholder="Введите название" />
+
+            <Label Text="Описание" FontAttributes="Bold" />
+            <Editor Text="{Binding CurrentTask.Description}" AutoSize="TextChanges" Placeholder="Введите описание" />
+
+            <Label Text="Срок выполнения" FontAttributes="Bold" />
+            <DatePicker Date="{Binding CurrentTask.DueDate}" />
+
+            <Label Text="Приоритет" FontAttributes="Bold" />
+            <Label Text="{Binding CurrentTask.Priority}" />
+
+            <Label Text="Статус" FontAttributes="Bold" />
+            <Label Text="{Binding CurrentTask.IsCompleted, StringFormat='Выполнена: {0}'}" />
+
+            <Button Text="Изменить статус" Command="{Binding ToggleStatusCommand}" />
+            <Button Text="Сохранить" Command="{Binding SaveCommand}" />
+            <Button Text="Удалить" Command="{Binding DeleteCommand}" BackgroundColor="#FFEBEE" TextColor="#B71C1C" />
+            <Button Text="Назад" Command="{Binding BackCommand}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

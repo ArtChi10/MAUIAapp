@@ -1,18 +1,20 @@
-﻿using MauiApp3.Models;
+﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
+using MauiApp3.Models;
 using MauiApp3.Pages;
 using MauiApp3.Services;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows.Input;
 
 namespace MauiApp3.ViewModels;
 
 public class TaskListViewModel : BaseViewModel
 {
-    private readonly TaskRepository _taskRepository;
+    private readonly ITaskRepository _taskRepository;
+    private readonly ITaskFileService _taskFileService;
+    private readonly List<TaskItem> _allTasks = [];
     private TaskItem? _selectedTask;
     private string _searchText = string.Empty;
     private string _selectedStatusFilter = "Все";
+    private string _statusMessage = string.Empty;
 
     public ObservableCollection<TaskItem> Tasks { get; } = [];
     public ObservableCollection<string> StatusFilters { get; } = ["Все", "Выполненные", "Невыполненные"];
@@ -41,6 +43,12 @@ public class TaskListViewModel : BaseViewModel
         }
     }
 
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set => SetProperty(ref _statusMessage, value);
+    }
+
     public TaskItem? SelectedTask
     {
         get => _selectedTask;
@@ -49,44 +57,90 @@ public class TaskListViewModel : BaseViewModel
 
     public ICommand LoadTasksCommand { get; }
     public ICommand SelectTaskCommand { get; }
+    public ICommand AddTaskCommand { get; }
+    public ICommand ExportCommand { get; }
+    public ICommand ImportCommand { get; }
 
-    public TaskListViewModel(TaskRepository taskRepository)
+    public TaskListViewModel(ITaskRepository taskRepository, ITaskFileService taskFileService)
     {
         Title = "Список задач";
         _taskRepository = taskRepository;
+        _taskFileService = taskFileService;
 
         LoadTasksCommand = new Command(async () => await LoadTasksAsync());
         SelectTaskCommand = new Command<TaskItem>(async task => await SelectTaskAsync(task));
-
-        _taskRepository.Tasks.CollectionChanged += (_, _) => ApplyFilter();
-        foreach (var task in _taskRepository.Tasks)
-        {
-            task.PropertyChanged += (_, _) => ApplyFilter();
-        }
+        AddTaskCommand = new Command(async () => await AddTaskAsync());
+        ExportCommand = new Command(async () => await ExportAsync());
+        ImportCommand = new Command(async () => await ImportAsync());
     }
 
-    private async Task LoadTasksAsync()
+    public async Task LoadTasksAsync()
     {
         if (IsBusy)
         {
             return;
         }
 
-        IsBusy = true;
-
-        var loadedTasks = await _taskRepository.GetTasksAsync();
-        Tasks.Clear();
-
-        foreach (var task in loadedTasks)
+        try
         {
-            if (!Tasks.Contains(task))
+            IsBusy = true;
+            StatusMessage = string.Empty;
+
+            await _taskRepository.InitializeAsync();
+            var loadedTasks = await _taskRepository.GetAllTasksAsync();
+
+            foreach (var existingTask in _allTasks)
             {
-                Tasks.Add(task);
+                existingTask.PropertyChanged -= OnTaskPropertyChanged;
+            }
+
+            _allTasks.Clear();
+            _allTasks.AddRange(loadedTasks);
+
+            foreach (var task in _allTasks)
+            {
+                task.PropertyChanged += OnTaskPropertyChanged;
+            }
+
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Ошибка загрузки: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task AddTaskAsync()
+    {
+        try
+        {
+            StatusMessage = string.Empty;
+            var task = new TaskItem
+            {
+                Title = "Новая задача",
+                Description = "Добавьте описание",
+                DueDate = DateTime.Today,
+                IsCompleted = false,
+                Priority = TaskPriority.Medium
+            };
+
+            await _taskRepository.SaveTaskAsync(task);
+            await LoadTasksAsync();
+
+            var actualTask = _allTasks.FirstOrDefault(item => item.Id == task.Id) ?? _allTasks.LastOrDefault();
+            if (actualTask is not null)
+            {
+                await SelectTaskAsync(actualTask);
             }
         }
-
-        ApplyFilter();
-        IsBusy = false;
+        catch (Exception ex)
+        {
+            StatusMessage = $"Ошибка создания задачи: {ex.Message}";
+        }
     }
 
     private async Task SelectTaskAsync(TaskItem? task)
@@ -104,9 +158,66 @@ public class TaskListViewModel : BaseViewModel
         SelectedTask = null;
     }
 
+    private async Task ExportAsync()
+    {
+        try
+        {
+            var path = await _taskFileService.ExportTasksToCsvAsync(_allTasks);
+            StatusMessage = $"Экспорт выполнен: {path}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Ошибка экспорта: {ex.Message}";
+        }
+    }
+
+    private async Task ImportAsync()
+    {
+        try
+        {
+            var imported = await _taskFileService.ImportTasksFromCsvAsync();
+            foreach (var task in imported)
+            {
+                await _taskRepository.SaveTaskAsync(task);
+            }
+
+            StatusMessage = $"Импортировано задач: {imported.Count}";
+            await LoadTasksAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Ошибка импорта: {ex.Message}";
+        }
+    }
+
+    private async void OnTaskPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (sender is not TaskItem task)
+        {
+            return;
+        }
+
+        if (e.PropertyName is nameof(TaskItem.Title)
+            or nameof(TaskItem.Description)
+            or nameof(TaskItem.DueDate)
+            or nameof(TaskItem.IsCompleted)
+            or nameof(TaskItem.Priority))
+        {
+            try
+            {
+                await _taskRepository.SaveTaskAsync(task);
+                ApplyFilter();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Ошибка автосохранения: {ex.Message}";
+            }
+        }
+    }
+
     private void ApplyFilter()
     {
-        var query = _taskRepository.Tasks.AsEnumerable();
+        var query = _allTasks.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
@@ -122,8 +233,10 @@ public class TaskListViewModel : BaseViewModel
             _ => query
         };
 
+        var filtered = query.OrderBy(task => task.DueDate).ToList();
+
         Tasks.Clear();
-        foreach (var task in query.OrderBy(task => task.DueDate))
+        foreach (var task in filtered)
         {
             Tasks.Add(task);
         }

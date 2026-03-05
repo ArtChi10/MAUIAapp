@@ -6,6 +6,8 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
+            <Label Text="{Binding StatusMessage}" TextColor="#1565C0" FontSize="12" />
+
             <Label Text="ID" FontAttributes="Bold" />
             <Label Text="{Binding CurrentTask.Id}" />
 
@@ -19,7 +21,7 @@
             <DatePicker Date="{Binding CurrentTask.DueDate}" />
 
             <Label Text="Приоритет" FontAttributes="Bold" />
-            <Label Text="{Binding CurrentTask.Priority}" />
+            <Picker ItemsSource="{Binding PriorityOptions}" SelectedItem="{Binding CurrentTask.Priority}" />
 
             <Label Text="Статус" FontAttributes="Bold" />
             <Label Text="{Binding CurrentTask.IsCompleted, StringFormat='Выполнена: {0}'}" />

@@ -18,7 +18,8 @@ namespace MauiApp3
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-            builder.Services.AddSingleton<TaskRepository>();
+            builder.Services.AddSingleton<ITaskRepository, SQLiteTaskRepository>();
+            builder.Services.AddSingleton<ITaskFileService, CsvTaskFileService>();
             builder.Services.AddSingleton<TaskListViewModel>();
             builder.Services.AddTransient<TaskDetailViewModel>();
             builder.Services.AddSingleton<TaskListPage>();

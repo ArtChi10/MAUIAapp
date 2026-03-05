@@ -16,10 +16,6 @@ public partial class TaskListPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-
-        if (_viewModel.Tasks.Count == 0)
-        {
-            _viewModel.LoadTasksCommand.Execute(null);
-        }
+        _viewModel.LoadTasksCommand.Execute(null);
     }
 }

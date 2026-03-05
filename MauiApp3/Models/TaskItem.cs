@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using SQLite;
+using System.ComponentModel;
+using SqliteMaxLength = SQLite.MaxLengthAttribute;
 using System.Runtime.CompilerServices;
 
 namespace MauiApp3.Models;
@@ -18,19 +20,23 @@ public class TaskItem : INotifyPropertyChanged
     private DateTime _dueDate = DateTime.Today;
     private bool _isCompleted;
     private TaskPriority _priority;
+    private DateTime _lastModified = DateTime.UtcNow;
 
+    [PrimaryKey, AutoIncrement]
     public int Id
     {
         get => _id;
         set => SetProperty(ref _id, value);
     }
 
+    [MaxLength(200)]
     public string Title
     {
         get => _title;
         set => SetProperty(ref _title, value);
     }
 
+    [MaxLength(2000)]
     public string Description
     {
         get => _description;
@@ -53,6 +59,12 @@ public class TaskItem : INotifyPropertyChanged
     {
         get => _priority;
         set => SetProperty(ref _priority, value);
+    }
+
+    public DateTime LastModified
+    {
+        get => _lastModified;
+        set => SetProperty(ref _lastModified, value);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

@@ -3,10 +3,6 @@
   "WorkspaceRootPath": "C:\\Users\\Artem Chibisov\\source\\repos\\MauiApp3\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{69C4FCF0-189B-4686-A516-0D077631DEA5}|MauiApp3\\MauiApp3.csproj|c:\\users\\artem chibisov\\source\\repos\\mauiapp3\\mauiapp3\\services\\sqlitetaskrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{69C4FCF0-189B-4686-A516-0D077631DEA5}|MauiApp3\\MauiApp3.csproj|solutionrelative:mauiapp3\\services\\sqlitetaskrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{69C4FCF0-189B-4686-A516-0D077631DEA5}|MauiApp3\\MauiApp3.csproj|c:\\users\\artem chibisov\\source\\repos\\mauiapp3\\mauiapp3\\viewmodels\\tasklistviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{69C4FCF0-189B-4686-A516-0D077631DEA5}|MauiApp3\\MauiApp3.csproj|solutionrelative:mauiapp3\\viewmodels\\tasklistviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -31,25 +27,12 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "SQLiteTaskRepository.cs",
-              "DocumentMoniker": "C:\\Users\\Artem Chibisov\\source\\repos\\MauiApp3\\MauiApp3\\Services\\SQLiteTaskRepository.cs",
-              "RelativeDocumentMoniker": "MauiApp3\\Services\\SQLiteTaskRepository.cs",
-              "ToolTip": "C:\\Users\\Artem Chibisov\\source\\repos\\MauiApp3\\MauiApp3\\Services\\SQLiteTaskRepository.cs",
-              "RelativeToolTip": "MauiApp3\\Services\\SQLiteTaskRepository.cs",
-              "ViewState": "AgIAAFEAAAAAAAAAAAAAABYAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T15:58:53.319Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "TaskListViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Artem Chibisov\\source\\repos\\MauiApp3\\MauiApp3\\ViewModels\\TaskListViewModel.cs",
               "RelativeDocumentMoniker": "MauiApp3\\ViewModels\\TaskListViewModel.cs",
               "ToolTip": "C:\\Users\\Artem Chibisov\\source\\repos\\MauiApp3\\MauiApp3\\ViewModels\\TaskListViewModel.cs",
               "RelativeToolTip": "MauiApp3\\ViewModels\\TaskListViewModel.cs",
-              "ViewState": "AgIAAHsAAAAAAAAAAAAAAJIAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAIwAAAAAAAAAAAAowJwAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-05T15:56:20.108Z",
               "EditorCaption": ""

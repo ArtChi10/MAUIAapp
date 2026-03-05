@@ -119,23 +119,42 @@ public class TaskListViewModel : BaseViewModel
         {
             IsBusy = true;
             StatusMessage = string.Empty;
+            var title = await Shell.Current.DisplayPromptAsync(
+               "Новая задача",
+               "Введите название задачи",
+               accept: "Создать",
+               cancel: "Отмена",
+               placeholder: "Например: Подготовить отчёт");
+
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                StatusMessage = "Создание задачи отменено";
+                return;
+            }
+
+            var description = await Shell.Current.DisplayPromptAsync(
+                "Описание задачи",
+                "Введите описание",
+                accept: "Сохранить",
+                cancel: "Пропустить",
+                placeholder: "Необязательно");
+
+            var isCompleted = SelectedStatusFilter == "Выполненные";
+
             var task = new TaskItem
             {
-                Title = "Новая задача",
-                Description = "Добавьте описание",
+                Title = title.Trim(),
+                Description = description?.Trim() ?? string.Empty,
                 DueDate = DateTime.Today,
-                IsCompleted = false,
+                IsCompleted = isCompleted,
                 Priority = TaskPriority.Medium
             };
-
             await _taskRepository.SaveTaskAsync(task);
             task.PropertyChanged += OnTaskPropertyChanged;
             _allTasks.Add(task);
             ApplyFilter();
 
             StatusMessage = "Задача добавлена";
-            await SelectTaskAsync(task);
-
         }
         catch (Exception ex)
         {

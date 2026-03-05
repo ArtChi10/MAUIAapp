@@ -1,4 +1,4 @@
-﻿using MauiApp3.Services;
+﻿
 using MauiApp3.Models;
 using SQLite;
 
@@ -76,16 +76,32 @@ public class SQLiteTaskRepository : ITaskRepository
 
         if (version < 2)
         {
-            var columns = await _database.GetTableInfoAsync(nameof(TaskItem));
-            var hasLastModified = columns.Any(column =>
-                string.Equals(column.Name, nameof(TaskItem.LastModified), StringComparison.OrdinalIgnoreCase));
-
-            if (!hasLastModified)
-            {
-                await _database.ExecuteAsync($"ALTER TABLE {nameof(TaskItem)} ADD COLUMN {nameof(TaskItem.LastModified)} TEXT NOT NULL DEFAULT '2000-01-01T00:00:00.0000000Z'");
-            }
-
+            await EnsureColumnAsync(nameof(TaskItem), nameof(TaskItem.LastModified), "TEXT NOT NULL DEFAULT '2000-01-01T00:00:00.0000000Z'");
             await SetSchemaVersionAsync(2);
+            version = 2;
+        }
+        if (version < 3)
+        {
+            await EnsureColumnAsync(nameof(TaskItem), nameof(TaskItem.Description), "TEXT NOT NULL DEFAULT ''");
+            await EnsureColumnAsync(nameof(TaskItem), nameof(TaskItem.DueDate), "TEXT NOT NULL DEFAULT '2000-01-01T00:00:00.0000000Z'");
+            await EnsureColumnAsync(nameof(TaskItem), nameof(TaskItem.IsCompleted), "INTEGER NOT NULL DEFAULT 0");
+            await EnsureColumnAsync(nameof(TaskItem), nameof(TaskItem.Priority), "INTEGER NOT NULL DEFAULT 1");
+            await EnsureColumnAsync(nameof(TaskItem), nameof(TaskItem.LastModified), "TEXT NOT NULL DEFAULT '2000-01-01T00:00:00.0000000Z'");
+
+
+            await SetSchemaVersionAsync(3);
+        }
+    }
+
+    private async Task EnsureColumnAsync(string tableName, string columnName, string sqlDefinition)
+    {
+        var columns = await _database.GetTableInfoAsync(tableName);
+        var hasColumn = columns.Any(column =>
+            string.Equals(column.Name, columnName, StringComparison.OrdinalIgnoreCase));
+
+        if (!hasColumn)
+        {
+            await _database.ExecuteAsync($"ALTER TABLE {tableName} ADD COLUMN {columnName} {sqlDefinition}");
         }
     }
 

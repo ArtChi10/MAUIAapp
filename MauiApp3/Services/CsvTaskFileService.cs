@@ -2,7 +2,7 @@
 using System.Text;
 using MauiApp3.Models;
 
-namespace MauiKT3.Services;
+namespace MauiApp3.Services;
 
 public class CsvTaskFileService : ITaskFileService
 {
@@ -42,8 +42,10 @@ public class CsvTaskFileService : ITaskFileService
             throw new FileNotFoundException("Файл для импорта не найден. Сначала выполните экспорт.", filePath);
         }
 
-        var lines = await File.ReadAllLinesAsync(filePath, Encoding.UTF8);
-        if (lines.Length <= 1)
+        var content = await File.ReadAllTextAsync(filePath, Encoding.UTF8);
+        var lines = ParseCsvRows(content);
+
+        if (lines.Count <= 1)
         {
             return [];
         }
@@ -52,13 +54,7 @@ public class CsvTaskFileService : ITaskFileService
 
         foreach (var line in lines.Skip(1))
         {
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                continue;
-            }
-
-            var parts = ParseCsvLine(line);
-            if (parts.Count < 7)
+            if (line.Count < 7)
             {
                 continue;
             }
@@ -66,16 +62,16 @@ public class CsvTaskFileService : ITaskFileService
             var task = new TaskItem
             {
                 Id = 0,
-                Title = parts[1],
-                Description = parts[2],
-                DueDate = DateTime.TryParse(parts[3], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dueDate)
-                    ? dueDate
+                Title = line[1],
+                Description = line[2],
+                DueDate = DateTime.TryParse(line[3], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dueDate)
+                 ? dueDate
                     : DateTime.Today,
-                IsCompleted = bool.TryParse(parts[4], out var isCompleted) && isCompleted,
-                Priority = Enum.TryParse<TaskPriority>(parts[5], out var priority)
+                IsCompleted = bool.TryParse(line[4], out var isCompleted) && isCompleted,
+                Priority = Enum.TryParse<TaskPriority>(line[5], out var priority)
                     ? priority
                     : TaskPriority.Medium,
-                LastModified = DateTime.TryParse(parts[6], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var modified)
+                LastModified = DateTime.TryParse(line[6], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var modified)
                     ? modified
                     : DateTime.UtcNow
             };
@@ -86,27 +82,28 @@ public class CsvTaskFileService : ITaskFileService
         return result;
     }
 
-    private static string Escape(string value)
+    private static string Escape(string? value)
     {
-        var escaped = value.Replace("\"", "\"\"");
+        var escaped = (value ?? string.Empty).Replace("\"", "\"\"");
         return $"\"{escaped}\"";
     }
 
-    private static List<string> ParseCsvLine(string line)
+    private static List<List<string>> ParseCsvRows(string content)
     {
-        var values = new List<string>();
-        var current = new StringBuilder();
+        var rows = new List<List<string>>();
+        var currentRow = new List<string>();
+        var currentCell = new StringBuilder();
         var inQuotes = false;
 
-        for (var i = 0; i < line.Length; i++)
+        for (var i = 0; i < content.Length; i++)
         {
-            var c = line[i];
+            var c = content[i];
 
             if (c == '"')
             {
-                if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                if (inQuotes && i + 1 < content.Length && content[i + 1] == '"')
                 {
-                    current.Append('"');
+                    currentCell.Append('"');
                     i++;
                 }
                 else
@@ -119,15 +116,39 @@ public class CsvTaskFileService : ITaskFileService
 
             if (c == ',' && !inQuotes)
             {
-                values.Add(current.ToString());
-                current.Clear();
+                currentRow.Add(currentCell.ToString());
+                currentCell.Clear();
                 continue;
             }
 
-            current.Append(c);
+            if ((c == '\n' || c == '\r') && !inQuotes)
+            {
+                if (c == '\r' && i + 1 < content.Length && content[i + 1] == '\n')
+                {
+                    i++;
+                }
+
+                currentRow.Add(currentCell.ToString());
+                currentCell.Clear();
+
+                if (currentRow.Any(cell => !string.IsNullOrWhiteSpace(cell)))
+                {
+                    rows.Add(currentRow);
+                }
+
+                currentRow = [];
+                continue;
+            }
+
+            currentCell.Append(c);
         }
 
-        values.Add(current.ToString());
-        return values;
+        currentRow.Add(currentCell.ToString());
+        if (currentRow.Any(cell => !string.IsNullOrWhiteSpace(cell)))
+        {
+            rows.Add(currentRow);
+        }
+
+        return rows;
     }
 }

@@ -83,7 +83,6 @@ public class TaskListViewModel : BaseViewModel
 
         try
         {
-            IsBusy = true;
             StatusMessage = string.Empty;
 
             await _taskRepository.InitializeAsync();
@@ -108,16 +107,17 @@ public class TaskListViewModel : BaseViewModel
         {
             StatusMessage = $"Ошибка загрузки: {ex.Message}";
         }
-        finally
-        {
-            IsBusy = false;
-        }
     }
 
     private async Task AddTaskAsync()
     {
+        if (IsBusy)
+        {
+            return;
+        }
         try
         {
+            IsBusy = true;
             StatusMessage = string.Empty;
             var task = new TaskItem
             {
@@ -129,17 +129,21 @@ public class TaskListViewModel : BaseViewModel
             };
 
             await _taskRepository.SaveTaskAsync(task);
-            await LoadTasksAsync();
+            task.PropertyChanged += OnTaskPropertyChanged;
+            _allTasks.Add(task);
+            ApplyFilter();
 
-            var actualTask = _allTasks.FirstOrDefault(item => item.Id == task.Id) ?? _allTasks.LastOrDefault();
-            if (actualTask is not null)
-            {
-                await SelectTaskAsync(actualTask);
-            }
+            StatusMessage = "Задача добавлена";
+            await SelectTaskAsync(task);
+
         }
         catch (Exception ex)
         {
             StatusMessage = $"Ошибка создания задачи: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 

@@ -5,9 +5,10 @@
              x:Class="MauiApp3.Pages.TaskListPage"
              Title="Список задач">
 
-    <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="12">
+    <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="12">
         <HorizontalStackLayout Grid.Row="0" Spacing="8">
             <Button Text="+ Задача" Command="{Binding AddTaskCommand}" />
+            <Button Text="Показать все" Command="{Binding ShowAllTasksCommand}" />
             <Button Text="Экспорт CSV" Command="{Binding ExportCommand}" />
             <Button Text="Импорт CSV" Command="{Binding ImportCommand}" />
         </HorizontalStackLayout>
@@ -26,7 +27,12 @@
                 ItemsSource="{Binding StatusFilters}"
                 SelectedItem="{Binding SelectedStatusFilter}" />
 
-        <CollectionView Grid.Row="4"
+        <Label Grid.Row="4"
+               Text="{Binding Tasks.Count, StringFormat='Найдено задач: {0}'}"
+               FontSize="12"
+               TextColor="#616161" />
+
+        <CollectionView Grid.Row="5"
                         ItemsSource="{Binding Tasks}"
                         SelectionMode="Single"
                         SelectionChangedCommand="{Binding SelectTaskCommand}"

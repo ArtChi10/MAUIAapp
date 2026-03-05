@@ -60,6 +60,8 @@ public class TaskListViewModel : BaseViewModel
     public ICommand AddTaskCommand { get; }
     public ICommand ExportCommand { get; }
     public ICommand ImportCommand { get; }
+    public ICommand ShowAllTasksCommand { get; }
+
 
     public TaskListViewModel(ITaskRepository taskRepository, ITaskFileService taskFileService)
     {
@@ -72,6 +74,7 @@ public class TaskListViewModel : BaseViewModel
         AddTaskCommand = new Command(async () => await AddTaskAsync());
         ExportCommand = new Command(async () => await ExportAsync());
         ImportCommand = new Command(async () => await ImportAsync());
+        ShowAllTasksCommand = new Command(ShowAllTasks);
     }
 
     public async Task LoadTasksAsync()
@@ -83,6 +86,7 @@ public class TaskListViewModel : BaseViewModel
 
         try
         {
+            IsBusy = true;
             StatusMessage = string.Empty;
 
             await _taskRepository.InitializeAsync();
@@ -106,6 +110,13 @@ public class TaskListViewModel : BaseViewModel
         catch (Exception ex)
         {
             StatusMessage = $"Ошибка загрузки: {ex.Message}";
+        }
+        finally
+        {
+            if (IsBusy)
+            {
+                IsBusy = false;
+            }
         }
     }
 
@@ -139,22 +150,21 @@ public class TaskListViewModel : BaseViewModel
                 cancel: "Пропустить",
                 placeholder: "Необязательно");
 
-            var isCompleted = SelectedStatusFilter == "Выполненные";
-
             var task = new TaskItem
             {
                 Title = title.Trim(),
                 Description = description?.Trim() ?? string.Empty,
                 DueDate = DateTime.Today,
-                IsCompleted = isCompleted,
+                IsCompleted = false,
                 Priority = TaskPriority.Medium
             };
             await _taskRepository.SaveTaskAsync(task);
-            task.PropertyChanged += OnTaskPropertyChanged;
-            _allTasks.Add(task);
-            ApplyFilter();
 
-            StatusMessage = "Задача добавлена";
+            IsBusy = false;
+            await LoadTasksAsync();
+            ShowAllTasks();
+            StatusMessage = $"Задача создана: {task.Title}";
+            return;
         }
         catch (Exception ex)
         {
@@ -162,8 +172,20 @@ public class TaskListViewModel : BaseViewModel
         }
         finally
         {
+            if (IsBusy)
+            {
+                IsBusy = false;
+            }
             IsBusy = false;
         }
+    }
+
+    private void ShowAllTasks()
+    {
+        SearchText = string.Empty;
+        SelectedStatusFilter = "Все";
+        ApplyFilter();
+        StatusMessage = $"Показаны все задачи: {Tasks.Count}";
     }
 
     private async Task SelectTaskAsync(TaskItem? task)
